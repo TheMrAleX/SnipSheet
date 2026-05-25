@@ -1,0 +1,19 @@
+# Binary
+spraysheetcut
+
+# Build artifacts
+*.o
+*.obj
+*.exe
+
+# Test output
+output/
+*.cuts
+
+# Editor / OS
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db
