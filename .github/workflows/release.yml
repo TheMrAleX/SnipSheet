@@ -17,8 +17,6 @@ jobs:
         include:
           - os: ubuntu-22.04
             asset: spraysheetcut-linux-x86_64
-          - os: macos-latest
-            asset: spraysheetcut-macos-arm64
           - os: windows-latest
             asset: spraysheetcut-windows-x86_64.exe
 
@@ -52,18 +50,6 @@ jobs:
             /usr/local/lib/libraylib.a \
             -lGL -lm -lpthread -ldl -lrt -lX11
 
-      # ---------- macOS ----------
-      - name: macOS deps
-        if: matrix.os == 'macos-latest'
-        run: brew install raylib
-
-      - name: macOS compile
-        if: matrix.os == 'macos-latest'
-        run: |
-          clang++ -O2 -std=c++17 main.cpp -o "${{ matrix.asset }}" \
-            $(pkg-config --cflags --libs raylib) \
-            -framework Cocoa -framework IOKit -framework OpenGL
-
       # ---------- Windows ----------
       - name: Setup MSYS2
         if: matrix.os == 'windows-latest'
@@ -80,7 +66,7 @@ jobs:
         shell: msys2 {0}
         run: |
           g++ -O2 -std=c++17 main.cpp -o "${{ matrix.asset }}" \
-            -lraylib -lopengl32 -lgdi32 -lwinmm
+            -static -lraylib -lopengl32 -lgdi32 -lwinmm
 
       # ---------- Upload artifact ----------
       - name: Upload artifact
