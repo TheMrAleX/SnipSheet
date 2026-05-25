@@ -10,38 +10,81 @@ permissions:
   contents: write
 
 jobs:
-  build-linux:
-    runs-on: ubuntu-latest
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            asset: spraysheetcut-linux-x86_64
+          - os: macos-latest
+            asset: spraysheetcut-macos-arm64
+          - os: windows-latest
+            asset: spraysheetcut-windows-x86_64.exe
+
+    runs-on: ${{ matrix.os }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install build dependencies
+      # ---------- Linux ----------
+      - name: Linux deps
+        if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential git cmake \
+          sudo apt-get install -y build-essential git \
             libasound2-dev libx11-dev libxrandr-dev libxi-dev \
             libgl1-mesa-dev libglu1-mesa-dev libxcursor-dev libxinerama-dev
 
-      - name: Build raylib (static)
+      - name: Linux build raylib
+        if: matrix.os == 'ubuntu-latest'
         run: |
           git clone --depth 1 --branch 5.0 https://github.com/raysan5/raylib.git /tmp/raylib
           cd /tmp/raylib/src
           make PLATFORM=PLATFORM_DESKTOP -j"$(nproc)"
           sudo make install PLATFORM=PLATFORM_DESKTOP
-          sudo ldconfig
 
-      - name: Compile SpraySheetCut
+      - name: Linux compile
+        if: matrix.os == 'ubuntu-latest'
         run: |
-          g++ -O2 -std=c++17 main.cpp -o spraysheetcut \
+          g++ -O2 -std=c++17 main.cpp -o "${{ matrix.asset }}" \
             /usr/local/lib/libraylib.a \
             -lGL -lm -lpthread -ldl -lrt -lX11
 
-      - name: Rename binary
-        run: mv spraysheetcut spraysheetcut-linux-x86_64
+      # ---------- macOS ----------
+      - name: macOS deps
+        if: matrix.os == 'macos-latest'
+        run: brew install raylib
 
+      - name: macOS compile
+        if: matrix.os == 'macos-latest'
+        run: |
+          clang++ -O2 -std=c++17 main.cpp -o "${{ matrix.asset }}" \
+            $(pkg-config --cflags --libs raylib) \
+            -framework Cocoa -framework IOKit -framework OpenGL
+
+      # ---------- Windows ----------
+      - name: Setup MSYS2
+        if: matrix.os == 'windows-latest'
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-raylib
+
+      - name: Windows compile
+        if: matrix.os == 'windows-latest'
+        shell: msys2 {0}
+        run: |
+          g++ -O2 -std=c++17 main.cpp -o "${{ matrix.asset }}" \
+            -lraylib -lopengl32 -lgdi32 -lwinmm
+
+      # ---------- Upload ----------
       - name: Upload to Release
         uses: softprops/action-gh-release@v2
         with:
-          files: spraysheetcut-linux-x86_64
+          files: ${{ matrix.asset }}
           generate_release_notes: true
