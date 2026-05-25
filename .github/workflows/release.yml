@@ -37,21 +37,11 @@ jobs:
             /usr/local/lib/libraylib.a \
             -lGL -lm -lpthread -ldl -lrt -lX11
 
-      - name: Package
-        run: |
-          mkdir -p dist/spraysheetcut-linux-x86_64
-          cp spraysheetcut README.md LICENSE 2>/dev/null || cp spraysheetcut README.md
-          cp -r img dist/spraysheetcut-linux-x86_64/img 2>/dev/null || true
-          cp spraysheetcut README.md dist/spraysheetcut-linux-x86_64/
-          [ -f LICENSE ] && cp LICENSE dist/spraysheetcut-linux-x86_64/ || true
-          cd dist
-          tar czf spraysheetcut-linux-x86_64.tar.gz spraysheetcut-linux-x86_64
-          sha256sum spraysheetcut-linux-x86_64.tar.gz > spraysheetcut-linux-x86_64.tar.gz.sha256
+      - name: Rename binary
+        run: mv spraysheetcut spraysheetcut-linux-x86_64
 
       - name: Upload to Release
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            dist/spraysheetcut-linux-x86_64.tar.gz
-            dist/spraysheetcut-linux-x86_64.tar.gz.sha256
+          files: spraysheetcut-linux-x86_64
           generate_release_notes: true
