@@ -43,7 +43,7 @@ It's a small, one-purpose tool. Nothing fancy. Useful when you need it.
 ## Installation
 
 ```bash
-git clone https://github.com/<your-user>/spraysheetcut.git
+git clone https://github.com/TheMrAleX/SnipSheet
 cd spraysheetcut
 ./install_raylib.sh   # first time only. Requires sudo.
 ./build.sh
