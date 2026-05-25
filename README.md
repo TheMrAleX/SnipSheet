@@ -122,7 +122,3 @@ Columns: `x y width height`. Lines starting with `#` are comments.
 ## Contributing
 
 Issues and PRs welcome. The codebase is a single `main.cpp` file under 300 lines, kept deliberately small.
-
-## License
-
-MIT.
