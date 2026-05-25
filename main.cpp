@@ -7,12 +7,19 @@
 #include <sys/stat.h>
 #include <algorithm>
 
+#ifdef _WIN32
+#include <direct.h>
+#define MKDIR(p) _mkdir(p)
+#else
+#define MKDIR(p) mkdir((p), 0755)
+#endif
+
 struct Crop {
     int x, y, w, h;
 };
 
 static void EnsureDir(const std::string& p) {
-    mkdir(p.c_str(), 0755);
+    MKDIR(p.c_str());
 }
 
 static std::string DirOf(const std::string& p) {
