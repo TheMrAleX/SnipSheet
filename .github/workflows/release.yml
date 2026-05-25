@@ -59,14 +59,24 @@ jobs:
           update: true
           install: >-
             mingw-w64-ucrt-x86_64-gcc
-            mingw-w64-ucrt-x86_64-raylib
+            make
+            git
+
+      - name: Windows build raylib
+        if: matrix.os == 'windows-latest'
+        shell: msys2 {0}
+        run: |
+          git clone --depth 1 --branch 5.0 https://github.com/raysan5/raylib.git /tmp/raylib
+          cd /tmp/raylib/src
+          make PLATFORM=PLATFORM_DESKTOP -j"$(nproc)"
 
       - name: Windows compile
         if: matrix.os == 'windows-latest'
         shell: msys2 {0}
         run: |
           g++ -O2 -std=c++17 main.cpp -o "${{ matrix.asset }}" \
-            -static -lraylib -lopengl32 -lgdi32 -lwinmm
+            /tmp/raylib/src/libraylib.a \
+            -static -lopengl32 -lgdi32 -lwinmm
 
       # ---------- Upload artifact ----------
       - name: Upload artifact
