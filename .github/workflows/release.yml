@@ -74,7 +74,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         shell: msys2 {0}
         run: |
-          g++ -O2 -std=c++17 main.cpp -o "${{ matrix.asset }}" \
+          g++ -O2 -std=c++17 -I/tmp/raylib/src main.cpp -o "${{ matrix.asset }}" \
             /tmp/raylib/src/libraylib.a \
             -static -lopengl32 -lgdi32 -lwinmm
 
