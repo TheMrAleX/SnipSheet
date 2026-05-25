@@ -30,7 +30,7 @@ jobs:
 
       # ---------- Linux ----------
       - name: Linux deps
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-22.04'
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential git \
@@ -38,7 +38,7 @@ jobs:
             libgl1-mesa-dev libglu1-mesa-dev libxcursor-dev libxinerama-dev
 
       - name: Linux build raylib
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-22.04'
         run: |
           git clone --depth 1 --branch 5.0 https://github.com/raysan5/raylib.git /tmp/raylib
           cd /tmp/raylib/src
@@ -46,7 +46,7 @@ jobs:
           sudo make install PLATFORM=PLATFORM_DESKTOP
 
       - name: Linux compile
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-22.04'
         run: |
           g++ -O2 -std=c++17 main.cpp -o "${{ matrix.asset }}" \
             /usr/local/lib/libraylib.a \
@@ -82,9 +82,30 @@ jobs:
           g++ -O2 -std=c++17 main.cpp -o "${{ matrix.asset }}" \
             -lraylib -lopengl32 -lgdi32 -lwinmm
 
-      # ---------- Upload ----------
-      - name: Upload to Release
+      # ---------- Upload artifact ----------
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.asset }}
+          path: ${{ matrix.asset }}
+          if-no-files-found: error
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: List files
+        run: ls -lh dist/
+
+      - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          files: ${{ matrix.asset }}
+          files: dist/*
           generate_release_notes: true
+          fail_on_unmatched_files: true
